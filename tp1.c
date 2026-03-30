@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sched.h>
 
 #define limite 100
 
-int total_impressoes = 0;
 int vencedor = -1;
+int fim = 0;
 
 pthread_mutex_t mutex;
 pthread_barrier_t barreira;
@@ -20,20 +21,18 @@ void* funcao_thread(void* arg) {
 
     // Barreira
     pthread_barrier_wait(&barreira);
-    for (int i = 0; i < 100; i++) {
-        pthread_mutex_lock(&mutex);
+    for(int i = 0; i < limite; i++){
 
-        // Quando der os 100 numeros, acaba
-        if (total_impressoes >= limite) {
+        pthread_mutex_lock(&mutex);
+        if(fim){
             pthread_mutex_unlock(&mutex);
             break;
         }
         printf("Thread %d: %d\n", id, i);
-        total_impressoes++;
 
-        // Diz quem ganhou
-        if (total_impressoes == limite && vencedor == -1) {
+        if( i == limite - 1){
             vencedor = id;
+            fim = 1;
         }
         pthread_mutex_unlock(&mutex);
         sched_yield();
